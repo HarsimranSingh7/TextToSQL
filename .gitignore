@@ -1,0 +1,12 @@
+# Virtual environment
+venv/
+
+# Python cache files
+__pycache__/
+*.pyc
+
+# Environment variables file - not needed for Streamlit deployment if using secrets management
+.env
+
+# Ignore logs and other files as needed
+*.log
