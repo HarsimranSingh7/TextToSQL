@@ -9,10 +9,19 @@ import seaborn as sns
 from sql import execute_sql_query, get_table_schema
 
 # Load environment variables from .env file
-load_dotenv()
+load_dotenv()  # This will still work locally
+api_key = os.getenv("GOOGLE_API_KEY")
 
-# Configure Google Generative AI API Key
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+# Try to get API key from Streamlit secrets if environment variable is not set
+if not api_key and hasattr(st, "secrets") and "GOOGLE_API_KEY" in st.secrets:
+    api_key = st.secrets["GOOGLE_API_KEY"]
+
+# Check if we have an API key and configure
+if not api_key:
+    st.error("Google API Key not found. Please set it in .env file or Streamlit secrets.")
+    st.stop()
+else:
+    genai.configure(api_key=api_key)
 
 # Initialize session state
 if "is_authenticated" not in st.session_state:
@@ -36,16 +45,21 @@ def authenticate():
 
 # Function to generate English prompt suggestions
 def generate_prompt_suggestion():
-    model = genai.GenerativeModel("gemini-pro")
-    prompt = """
-    Provide a helpful natural language query suggestion to explore a student database.
-    Example prompts include:
-    - "Show the top 5 students with the highest math scores"
-    - "List students who scored above 80 in writing and completed the test preparation course"
-    - "Calculate the average reading score by gender"
-    """
-    response = model.generate_content(prompt)
-    st.session_state["suggestion"] = response.text.strip()
+    try:
+        model = genai.GenerativeModel("gemini-pro")
+        prompt = """
+        Provide a helpful natural language query suggestion to explore a student database.
+        Example prompts include:
+        - "Show the top 5 students with the highest math scores"
+        - "List students who scored above 80 in writing and completed the test preparation course"
+        - "Calculate the average reading score by gender"
+        """
+        response = model.generate_content(prompt)
+        st.session_state["suggestion"] = response.text.strip()
+    except Exception as e:
+        st.error(f"Error generating suggestion: {str(e)}")
+        # Provide a fallback suggestion
+        st.session_state["suggestion"] = "Show the top 5 students with the highest math scores"
 
 # Generative Model for Natural Language to SQL
 def generate_sql_from_text(question, prompt):
