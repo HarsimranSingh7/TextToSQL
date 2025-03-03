@@ -46,7 +46,8 @@ def authenticate():
 # Function to generate English prompt suggestions
 def generate_prompt_suggestion():
     try:
-        model = genai.GenerativeModel("gemini-pro")
+        # Use the correct model name from your curl command
+        model = genai.GenerativeModel("gemini-2.0-flash")  # Updated model name
         prompt = """
         Provide a helpful natural language query suggestion to explore a student database.
         Example prompts include:
@@ -63,7 +64,7 @@ def generate_prompt_suggestion():
 
 # Generative Model for Natural Language to SQL
 def generate_sql_from_text(question, prompt):
-    model = genai.GenerativeModel("gemini-pro")
+    model = genai.GenerativeModel("gemini-2.0-flash")
     # Concatenate prompt and question into a single string input
     input_text = prompt + "\nQuestion: " + question
     response = model.generate_content(input_text)
